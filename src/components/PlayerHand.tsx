@@ -1,0 +1,167 @@
+
+import React from 'react';
+import { Player as PlayerType, Card as CardType, GamePhase } from '@/types/game';
+import Card from './Card';
+import { cn } from '@/lib/utils';
+import { canPlayCard } from '@/utils/gameUtils';
+
+interface PlayerHandProps {
+  player: PlayerType;
+  isCurrentPlayer: boolean;
+  isHumanPlayer: boolean;
+  onCardClick: (card: CardType) => void;
+  gamePhase: GamePhase;
+  trumpSuit: string | null;
+  currentTrick: CardType[];
+  selectedCards?: CardType[];
+  onCardSelect?: (card: CardType) => void;
+}
+
+const PlayerHand: React.FC<PlayerHandProps> = ({
+  player,
+  isCurrentPlayer,
+  isHumanPlayer,
+  onCardClick,
+  gamePhase,
+  trumpSuit,
+  currentTrick,
+  selectedCards = [],
+  onCardSelect
+}) => {
+  // Sort cards by suit and rank
+  const sortedHand = [...player.hand].sort((a, b) => {
+    // Sort by suit first
+    const suitOrder = { 'hearts': 0, 'diamonds': 1, 'spades': 2, 'clubs': 3, 'joker': 4 };
+    const suitComparison = suitOrder[a.suit] - suitOrder[b.suit];
+    if (suitComparison !== 0) return suitComparison;
+    
+    // Then sort by rank
+    const rankOrder = { 'A': 0, 'K': 1, 'Q': 2, 'J': 3, '10': 4, '9': 5, '8': 6, '7': 7, '6': 8, 'joker': 9 };
+    return rankOrder[a.rank] - rankOrder[b.rank];
+  });
+
+  const isCardSelected = (card: CardType) => {
+    return selectedCards.some(selectedCard => selectedCard.id === card.id);
+  };
+
+  const isCardPlayable = (card: CardType) => {
+    if (gamePhase !== 'playing') return false;
+    if (!isCurrentPlayer) return false;
+    return canPlayCard(card, player.hand, currentTrick, trumpSuit as any);
+  };
+
+  const handleCardClick = (card: CardType) => {
+    if (gamePhase === 'bidding' && isCurrentPlayer && onCardSelect) {
+      onCardSelect(card);
+    } else if (gamePhase === 'playing' && isCurrentPlayer) {
+      onCardClick(card);
+    }
+  };
+
+  // Calculate overlap based on number of cards
+  const getCardOffset = (index: number, total: number) => {
+    const maxWidth = isCurrentPlayer ? 80 : 90; // Maximum width percentage to use
+    const cardWidthPercentage = total > 1 ? maxWidth / (total - 1) : 0;
+    return `${index * cardWidthPercentage}%`;
+  };
+
+  // Show cards face down for non-current players
+  const showFaceDown = !isCurrentPlayer;
+
+  return (
+    <div className={cn(
+      "relative p-4 rounded-lg transition-all duration-300",
+      isCurrentPlayer ? "bg-amber-100 shadow-lg border-2 border-goldAccent" : "bg-white/40",
+      isCurrentPlayer && "animate-pulse"
+    )}>
+      <div className="mb-2 flex justify-between items-center">
+        <h3 className={cn(
+          "font-bold",
+          isCurrentPlayer ? "text-amber-800" : "text-gray-700"
+        )}>
+          {player.name}
+          {player.bid !== null && gamePhase !== 'bidding' && (
+            <span className="ml-2 text-sm font-normal text-gray-600">
+              (Bid: {player.bid})
+            </span>
+          )}
+        </h3>
+        {gamePhase === 'gameOver' && (
+          <div className="text-sm font-semibold">
+            Score: {player.score} | Card Points: {player.cardPoints}
+          </div>
+        )}
+      </div>
+      
+      {isCurrentPlayer ? (
+        <div className="bg-tableGreen/10 rounded-lg p-2 w-full min-h-[150px] flex items-center justify-center">
+          <div className="relative w-full" style={{ height: sortedHand.length > 8 ? '110px' : '140px' }}>
+            {sortedHand.map((card, index) => (
+              <div
+                key={card.id}
+                className="absolute transition-all duration-200"
+                style={{
+                  left: getCardOffset(index, sortedHand.length),
+                  zIndex: index,
+                  transform: isCardSelected(card) ? 'translateY(-16px)' : 'none'
+                }}
+              >
+                <Card
+                  card={card}
+                  onClick={() => handleCardClick(card)}
+                  selected={isCardSelected(card)}
+                  faceDown={false}
+                  playable={isCurrentPlayer && (gamePhase === 'bidding' || isCardPlayable(card))}
+                  small={sortedHand.length > 8}
+                  className={isCurrentPlayer ? "hover:shadow-xl transition-all duration-200" : ""}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        // Non-current player's hand - show cards face down in a fan layout
+        <div className="relative min-h-[90px] flex items-center justify-center">
+          <div className="relative w-full" style={{ height: '80px' }}>
+            {sortedHand.map((card, index) => (
+              <div
+                key={card.id}
+                className="absolute"
+                style={{
+                  left: getCardOffset(index, sortedHand.length),
+                  zIndex: index,
+                }}
+              >
+                <Card
+                  key={card.id}
+                  card={card}
+                  faceDown={true}
+                  small={true}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {player.tricks.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm text-gray-600 mb-1">
+            Tricks Won: {player.tricks.length}
+          </h4>
+          <div className="flex flex-wrap gap-1 overflow-x-auto">
+            {player.tricks.map((trick, i) => (
+              <div key={i} className="flex">
+                {trick.slice(0, 1).map((card, j) => (
+                  <Card key={`${i}-${j}`} card={card} small />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PlayerHand;
