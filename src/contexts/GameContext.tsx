@@ -204,21 +204,24 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         message: 'Dealing cards for a new round...'
       };
 
-    case 'START_NEW_GAME':
-      return initializeGameState();
-
-    case 'SET_MESSAGE':
+    case 'START_NEW_GAME': {
+      const currentNames = state.players.map(p => p.name);
+      const newState = initializeGameState();
       return {
-        ...state,
-        message: action.message
+        ...newState,
+        players: newState.players.map((player, index) => ({
+          ...player,
+          name: currentNames[index] || player.name
+        }))
       };
+    }
 
     case 'SET_NAMES':
       return {
         ...state,
         players: state.players.map((player, index) => ({
           ...player,
-          name: action.names[index] || player.name
+          name: action.names[index] || `Player ${index + 1}`
         }))
       };
 

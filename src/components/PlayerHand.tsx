@@ -60,17 +60,15 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 
   // Calculate overlap based on number of cards
   const getCardOffset = (index: number, total: number) => {
-    const maxWidth = isCurrentPlayer ? 80 : 90; // Maximum width percentage to use
+    // Adjust the maximum width to prevent cards from extending outside
+    const maxWidth = isCurrentPlayer ? 70 : 80; // Reduced from 80/90 to 70/80
     const cardWidthPercentage = total > 1 ? maxWidth / (total - 1) : 0;
     return `${index * cardWidthPercentage}%`;
   };
 
-  // Show cards face down for non-current players
-  const showFaceDown = !isCurrentPlayer;
-
   return (
     <div className={cn(
-      "relative p-4 rounded-lg transition-all duration-300",
+      "relative p-4 rounded-lg transition-all duration-300 overflow-hidden",
       isCurrentPlayer ? "bg-amber-100/70 shadow-lg border-2 border-goldAccent" : "bg-white/40",
       isCurrentPlayer && "shadow-[0_0_15px_rgba(245,158,11,0.3)]"
     )}>
@@ -94,8 +92,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       </div>
       
       {isCurrentPlayer ? (
-        <div className="bg-tableGreen/10 rounded-lg p-2 w-full min-h-[150px] flex items-center justify-center">
-          <div className="relative w-full" style={{ height: sortedHand.length > 8 ? '110px' : '140px' }}>
+        <div className="bg-tableGreen/10 rounded-lg p-2 w-full h-[180px] flex items-center justify-center overflow-hidden"> {/* Increased height more */}
+          <div className="relative w-full h-[140px] mt-10"> {/* Increased margin-top */}
             {sortedHand.map((card, index) => (
               <div
                 key={card.id}
@@ -112,7 +110,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
                   selected={isCardSelected(card)}
                   faceDown={false}
                   playable={isCurrentPlayer && (gamePhase === 'bidding' || isCardPlayable(card))}
-                  small={sortedHand.length > 8}
+                  small={true}  // Always keep cards small to maintain consistent size
                   className={isCurrentPlayer ? "hover:shadow-xl transition-all duration-200" : ""}
                 />
               </div>
@@ -120,9 +118,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           </div>
         </div>
       ) : (
-        // Non-current player's hand - show cards face down in a fan layout
-        <div className="relative min-h-[90px] flex items-center justify-center">
-          <div className="relative w-full" style={{ height: '80px' }}>
+        <div className="relative h-[90px] flex items-center justify-center overflow-hidden"> {/* Fixed height */}
+          <div className="relative w-full h-[80px]"> {/* Fixed height */}
             {sortedHand.map((card, index) => (
               <div
                 key={card.id}

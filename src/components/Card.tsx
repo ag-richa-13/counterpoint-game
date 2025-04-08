@@ -31,12 +31,12 @@ const Card: React.FC<CardProps> = ({
   const renderCardContent = () => {
     if (faceDown) {
       return (
-        <div className="w-full h-full bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center rounded-md shadow-inner">
-          <div className="flex flex-col items-center">
-            <div className="text-white text-opacity-30 text-lg sm:text-xl font-serif">
+        <div className="w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center rounded-lg p-3">
+          <div className="flex flex-col items-center bg-blue-800/30 rounded-lg w-full h-full justify-center">
+            <div className="text-white/40 text-lg sm:text-xl font-serif tracking-widest">
               ♠♥♦♣
             </div>
-            <div className="text-white text-opacity-20 text-xs sm:text-sm mt-1 font-serif">
+            <div className="text-white/30 text-xs sm:text-sm mt-2 font-serif tracking-wide">
               Counterpoint
             </div>
           </div>
@@ -46,34 +46,58 @@ const Card: React.FC<CardProps> = ({
 
     if (suit === "joker") {
       return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200">
-          <div className="text-xl sm:text-2xl font-bold font-serif">JOKER</div>
-          <div className="text-3xl sm:text-4xl mt-2 text-yellow-500">★</div>
+        <div className="w-full h-full flex flex-col items-center justify-between bg-gradient-to-br from-purple-100 via-purple-50 to-purple-200 p-1">
+          {/* Top text */}
+          <div className="text-sm sm:text-base font-bold bg-gradient-to-r from-yellow-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            JOKER
+          </div>
+          
+          {/* Center star */}
+          <div className="flex-grow flex items-center justify-center">
+            <div className="relative">
+              <span className="text-3xl sm:text-4xl text-yellow-500 animate-pulse drop-shadow-lg">★</span>
+              <span className="absolute inset-0 text-3xl sm:text-4xl text-purple-400/50 animate-pulse delay-150">★</span>
+            </div>
+          </div>
+          
+          {/* Bottom text (rotated) */}
+          <div className="text-sm sm:text-base font-bold bg-gradient-to-r from-yellow-500 via-purple-500 to-pink-500 bg-clip-text text-transparent rotate-180">
+            JOKER
+          </div>
         </div>
       );
     }
 
     return (
-      <div className={`w-full h-full flex flex-col ${suitColorClass} bg-gradient-to-br from-gray-50 to-gray-100`}>
-        <div className="flex justify-between p-1.5">
-          <div className={`font-bold font-serif ${small ? "text-xs sm:text-sm" : "text-sm sm:text-lg"}`}>
-            {rank}
+      <div className={`w-full h-full flex flex-col justify-between p-1 ${suitColorClass}`}>
+        {/* Top section */}
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col items-center">
+            <div className={`font-bold font-serif leading-none ${small ? "text-xs" : "text-sm"}`}>
+              {rank}
+            </div>
+            <div className={`${small ? "text-[10px]" : "text-xs"}`}>{suitSymbol}</div>
           </div>
-          <div className={`${small ? "text-xs sm:text-sm" : "text-sm sm:text-lg"}`}>
+        </div>
+
+        {/* Center symbol */}
+        <div className="flex-grow flex items-center justify-center -mt-2">
+          <div className={`
+            ${small ? "text-2xl sm:text-3xl" : "text-4xl sm:text-5xl"}
+            font-bold drop-shadow-md transform
+            ${suit === "hearts" || suit === "diamonds" ? "drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]" : "drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]"}
+          `}>
             {suitSymbol}
           </div>
         </div>
-        <div className="flex-grow flex items-center justify-center">
-          <div className={`${small ? "text-2xl sm:text-3xl" : "text-4xl sm:text-5xl"} font-serif`}>
-            {suitSymbol}
-          </div>
-        </div>
-        <div className="flex justify-between p-1.5 rotate-180">
-          <div className={`font-bold font-serif ${small ? "text-xs sm:text-sm" : "text-sm sm:text-lg"}`}>
-            {rank}
-          </div>
-          <div className={`${small ? "text-xs sm:text-sm" : "text-sm sm:text-lg"}`}>
-            {suitSymbol}
+
+        {/* Bottom section (rotated) */}
+        <div className="flex justify-between items-start rotate-180">
+          <div className="flex flex-col items-center">
+            <div className={`font-bold font-serif leading-none ${small ? "text-xs" : "text-sm"}`}>
+              {rank}
+            </div>
+            <div className={`${small ? "text-[10px]" : "text-xs"}`}>{suitSymbol}</div>
           </div>
         </div>
       </div>
@@ -83,29 +107,26 @@ const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        `relative rounded-lg bg-white shadow-lg border-2 transition-all duration-200`,
-        small ? "w-10 h-14 sm:w-12 sm:h-16" : "w-16 h-24 sm:w-20 sm:h-28",
+        `relative rounded-xl bg-white shadow-lg border border-gray-200 transition-all duration-300`,
+        small ? "w-16 h-24 sm:w-20 sm:h-28" : "w-24 h-36 sm:w-28 sm:h-40", // Significantly increased sizes
         selected && "transform -translate-y-2 sm:-translate-y-4 ring-2 ring-goldAccent shadow-xl",
         !playable && !faceDown && "opacity-60 cursor-not-allowed",
-        playable && !faceDown && "hover:shadow-2xl cursor-pointer hover:-translate-y-1 hover:scale-105",
+        playable && !faceDown && "hover:shadow-xl cursor-pointer hover:-translate-y-1 hover:rotate-1",
         faceDown && "shadow-inner",
         className
       )}
       onClick={playable && !faceDown ? onClick : undefined}
-      style={{
-        ...style,
-        boxShadow: selected ? '0 10px 25px -5px rgba(0, 0, 0, 0.2)' : undefined
-      }}
+      style={style}
     >
       <div className={cn(
-        "w-full h-full overflow-hidden rounded-md",
-        faceDown ? "" : "bg-white"
+        "w-full h-full overflow-hidden rounded-xl",
+        !faceDown && "bg-gradient-to-br from-white via-white to-gray-50"
       )}>
         {renderCardContent()}
       </div>
 
       {card.value > 0 && !faceDown && (
-        <div className="absolute -bottom-1 -right-1 bg-goldAccent text-black text-[10px] sm:text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shadow-md">
+        <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-amber-400 to-amber-500 text-white text-[10px] sm:text-xs font-bold rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-lg border border-amber-300">
           {card.value}
         </div>
       )}
