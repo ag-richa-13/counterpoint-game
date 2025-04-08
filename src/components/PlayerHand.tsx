@@ -71,8 +71,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   return (
     <div className={cn(
       "relative p-4 rounded-lg transition-all duration-300",
-      isCurrentPlayer ? "bg-amber-100 shadow-lg border-2 border-goldAccent" : "bg-white/40",
-      isCurrentPlayer && "animate-pulse"
+      isCurrentPlayer ? "bg-amber-100/70 shadow-lg border-2 border-goldAccent" : "bg-white/40",
+      isCurrentPlayer && "shadow-[0_0_15px_rgba(245,158,11,0.3)]"
     )}>
       <div className="mb-2 flex justify-between items-center">
         <h3 className={cn(
